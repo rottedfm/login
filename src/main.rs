@@ -23,7 +23,7 @@ async fn main() -> AppResult<()> {
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(io::stdout());
     let terminal = Terminal::new(backend)?;
-    let events = EventHandler::new(250);
+    let events = EventHandler::new(150);
     let mut tui = Tui::new(terminal, events);
     tui.init()?;
 
