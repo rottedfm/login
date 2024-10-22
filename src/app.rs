@@ -1,4 +1,5 @@
 use std::error;
+use std::{env, path::Path, process::Command};
 
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -186,12 +187,27 @@ impl Default for App {
 impl App {
     /// Constructs a new instance of [`App`].
     pub fn new() -> Self {
-        Self::default()
+        let mut app = Self::default();
+        app.fetch_git_log();
+        app
     }
 
     // Fetch git log -p from ~/.dotfiles
     fn fetch_git_log(&mut self) {
-        let dotfiles_path = 
+        let dotfiles_path = Path::new(env::var("HOME").unwrap().as_str()).join(".dotfiles");
+        env::set_current_dir(&dotfiles_path).expect("Failed to change directory to ~/.dotfiles");
+
+        let output = Command::new("git")
+            .arg("log")
+            .arg("-p")
+            .output()
+            .expect("Failed to run git log -p in ~/.dotfiles");
+
+        self.git_log = String::from_utf8(output.stdout)
+            .expect("Failed to convert git log output to string")
+            .lines()
+            .map(|s| s.to_string())
+            .collect();
     }
 
     /// Handles the tick event of the terminal.
@@ -206,7 +222,7 @@ impl App {
 
     /// Move to the next frame in the queue
     pub fn cycle(&mut self) {
-  if !self.queue.is_empty() {
+        if !self.queue.is_empty() {
             if self.forward {
                 // Moving forward
                 if self.current_frame == self.queue.len() - 1 {
@@ -229,6 +245,20 @@ impl App {
 
             // Update the `art` to the current frame
             self.art = self.queue[self.current_frame].clone();
-        }        
+        }
+    }
+
+    /// Scroll up in git log
+    pub fn scroll_up(&mut self) {
+        if self.scroll > 0 {
+            self.scroll -= 1;
+        }
+    }
+
+    /// Scroll down in the git log
+    pub fn scroll_down(&mut self) {
+        if self.scroll < self.git_log.len() as u16 {
+            self.scroll += 1;
+        }
     }
 }

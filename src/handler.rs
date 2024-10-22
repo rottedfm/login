@@ -14,6 +14,14 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
                 app.quit();
             }
         }
+        // Scroll up in git log
+        KeyCode::Char('k') | KeyCode::Char('H') => {
+            app.scroll_up();
+        }
+        // Scroll down in git log
+        KeyCode::Char('j') | KeyCode::Char('J') => {
+            app.scroll_down();
+        }
         // Other handlers you could add here.
         _ => {}
     }
