@@ -22,6 +22,10 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
         KeyCode::Char('j') | KeyCode::Char('J') => {
             app.scroll_down();
         }
+        // Launch Hyprland
+        KeyCode::Enter => {
+            let _ = app.launcher();
+        }
         // Other handlers you could add here.
         _ => {}
     }

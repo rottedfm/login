@@ -1,4 +1,5 @@
 use std::error;
+use std::process::Stdio;
 use std::{env, path::Path, process::Command};
 
 /// Application result type.
@@ -210,6 +211,39 @@ impl App {
             .collect();
     }
 
+    /// Launches Hyprland
+    pub fn launcher(&mut self) -> AppResult<()> {
+        // Go to the home dir
+        let home_dir = env::var("HOME").expect("Could not find home directory");
+
+        // Set the current directory to home
+        env::set_current_dir(&home_dir)?;
+
+        // clear
+        Command::new("clear")
+            .spawn()
+            .expect("Failed to clear the screen");
+
+        // Start mullvad
+        Command::new("mullvad")
+            .arg("connect")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .expect("Failed to launch mullvad");
+
+        // Launch Hyprland
+        Command::new("hyprland")
+            .stderr(Stdio::null())
+            .stdout(Stdio::null())
+            .spawn()
+            .expect("Failed to launch Hyprland");
+
+        self.running = false;
+
+        Ok(())
+    }
+
     /// Handles the tick event of the terminal.
     pub fn tick(&mut self) {
         self.cycle();
@@ -217,6 +251,10 @@ impl App {
 
     /// Set running to false to quit the application.
     pub fn quit(&mut self) {
+        Command::new("clear")
+            .status()
+            .expect("Failed to clear the TTY");
+
         self.running = false;
     }
 
